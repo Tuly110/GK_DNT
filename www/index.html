@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hiển thị thời gian</title>
+    <script src="https://unpkg.com/@capacitor/core@latest/dist/capacitor.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@capacitor-community/media@latest/dist/media.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+</head>
+<body class="bg-gray-900 text-white flex flex-col items-center justify-center min-h-screen">
+
+<h1 class="text-3xl font-bold mb-6">Hiển thị thời gian</h1>
+
+<div class="bg-gray-800 p-6 rounded-lg shadow-lg w-80 text-center">
+    <p id="time-display" class="text-xl mb-4">Nhấn nút để xem thời gian</p>
+    <button onclick="showTime()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full mb-2">
+        Xem thời gian
+    </button>
+    <button onclick="shareTime()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded w-full mb-2">
+        Chia sẻ
+    </button>
+    <button onclick="captureScreenshot()" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded w-full">
+        Chụp màn hình
+    </button>
+</div>
+
+<script>
+    async function showTime() {
+        let now = new Date();
+        let timeString = now.toLocaleTimeString();
+        document.getElementById('time-display').innerText = "Thời gian hiện tại: " + timeString;
+        sendNotification(timeString);
+    }
+
+    async function sendNotification(time) {
+        const { LocalNotifications } = Capacitor.Plugins;
+        await LocalNotifications.schedule({
+            notifications: [{
+                title: "Thời gian hiện tại",
+                body: "Bây giờ là: " + time,
+                id: 1,
+                schedule: { at: new Date(Date.now() + 1000) }
+            }]
+        });
+    }
+
+    async function shareTime() {
+        const { Share } = Capacitor.Plugins;
+        let now = new Date().toLocaleTimeString();
+        await Share.share({
+            title: "Thời gian hiện tại",
+            text: "Bây giờ là: " + now,
+            dialogTitle: "Chia sẻ thời gian"
+        });
+    }
+
+    async function captureScreenshot() {
+    const target = document.body; // Chụp toàn bộ trang
+    try {
+        const canvas = await html2canvas(target);
+        const imgData = canvas.toDataURL("image/png"); // Xuất ảnh dạng PNG
+
+        // Tạo thẻ <a> để tải ảnh về
+        const link = document.createElement("a");
+        link.href = imgData;
+        link.download = "screenshot.png";
+        link.click();
+
+        alert("Ảnh chụp màn hình đã được lưu!");
+    } catch (error) {
+        console.error("Lỗi chụp màn hình:", error);
+        alert("Không thể chụp màn hình!");
+    }
+}
+
+</script>
+
+</body>
+</html>
